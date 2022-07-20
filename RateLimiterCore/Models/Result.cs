@@ -1,4 +1,4 @@
-﻿namespace RateLimiterCore;
+﻿namespace RateLimiterCore.Models;
 
 public class Result<T>
 {

@@ -1,4 +1,6 @@
-﻿namespace RateLimiterCore;
+﻿using RateLimiterCore.Models;
+
+namespace RateLimiterCore;
 
 public interface IRateLimiter<T>
 {
