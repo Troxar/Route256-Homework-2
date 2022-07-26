@@ -7,7 +7,7 @@ public class RateLimiter<T> : IRateLimiter<T>, IDisposable
     private readonly IRateLimiterConfig _config;
     private readonly SemaphoreSlim _semaphore;
     private readonly object _sync = new object();
-    public DateTime _nextWindow;
+    private DateTime _nextWindow;
     
     public RateLimiter(IRateLimiterConfig config)
     {
