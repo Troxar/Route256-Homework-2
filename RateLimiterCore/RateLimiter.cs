@@ -7,7 +7,7 @@ public class RateLimiter<T> : IRateLimiter<T>, IDisposable
     private readonly IRateLimiterConfig _config;
     private readonly SemaphoreSlim _semaphore;
     private readonly object _sync = new object();
-    private DateTime _nextWindow;
+    public DateTime _nextWindow;
     
     public RateLimiter(IRateLimiterConfig config)
     {
@@ -44,7 +44,12 @@ public class RateLimiter<T> : IRateLimiter<T>, IDisposable
             }
             
             _nextWindow = now.AddSeconds(_config.Duration);
-            _semaphore.Release(_config.Count);
+            
+            int releaseCount = _config.Count - _semaphore.CurrentCount;
+            if (releaseCount > 0)
+            {
+                _semaphore.Release(releaseCount);    
+            }
         }   
     }
     
