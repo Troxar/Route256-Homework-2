@@ -24,8 +24,8 @@ public class RateLimiterTests
     {
         // Arrange
         var timeStub = new SystemDateStub(startDate);
-        var config = new RateLimiterConfig(configCount, configDuration, timeStub);
-        var cut = new RateLimiter<int>(config);
+        var config = new RateLimiterConfig(configCount, configDuration);
+        var cut = new RateLimiter<int>(config, timeStub);
         var tasksList = new List<Task<Result<int>>>();
 
         for (int i = 0; i < tasksCount; i++)
@@ -75,8 +75,8 @@ public class RateLimiterTests
     {
         // Arrange
         var timeStub = new SystemDateStub(startDate);
-        var config = new RateLimiterConfig(configCount, configDuration, timeStub);
-        var cut = new RateLimiter<int>(config);
+        var config = new RateLimiterConfig(configCount, configDuration);
+        var cut = new RateLimiter<int>(config, timeStub);
         var tasksList = new List<Task<Result<int>>>();
 
         for (int i = 0; i < portions; i++)

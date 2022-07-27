@@ -8,22 +8,24 @@ public class RateLimiter<T> : IRateLimiter<T>, IDisposable
     private readonly SemaphoreSlim _semaphore;
     private readonly object _sync = new object();
     private DateTime _nextWindow;
+    private readonly ISystemDate _systemDate;
     
-    public RateLimiter(IRateLimiterConfig config)
+    public RateLimiter(IRateLimiterConfig config, ISystemDate systemDate)
     {
         _config = config;
         _semaphore = new SemaphoreSlim(_config.Count, _config.Count);
+        _systemDate = systemDate;
         SetNextWindow();
     }
     
     private void SetNextWindow()
     {
-        _nextWindow = _config.SystemDate.Now.AddSeconds(_config.Duration);
+        _nextWindow = _systemDate.Now.AddSeconds(_config.Duration);
     }
     
     public async Task<Result<T>> Invoke(Func<Task<T>> action, CancellationToken cancellationToken)
     {
-        if (_config.SystemDate.Now >= _nextWindow)
+        if (_systemDate.Now >= _nextWindow)
             PrepareNextWindow();
 
         if (!_semaphore.Wait(100, cancellationToken)) 
@@ -37,7 +39,7 @@ public class RateLimiter<T> : IRateLimiter<T>, IDisposable
     {
         lock (_sync)
         {
-            var now = _config.SystemDate.Now;
+            var now = _systemDate.Now;
             if (_nextWindow > now)
             {
                 return;

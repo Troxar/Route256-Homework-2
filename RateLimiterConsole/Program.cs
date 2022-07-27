@@ -12,8 +12,8 @@ public class Programm
     {
         var random = new Random();
 
-        var config = new RateLimiterConfig(REQUESTSCOUNT, WINDOWDURATION, new SystemDate());
-        var limiter = new RateLimiter<int>(config);
+        var config = new RateLimiterConfig(REQUESTSCOUNT, WINDOWDURATION);
+        var limiter = new RateLimiter<int>(config, new SystemDate());
 
         var tasksList = new List<Task<Result<int>>>();
 

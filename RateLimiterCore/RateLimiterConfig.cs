@@ -6,12 +6,10 @@ public class RateLimiterConfig : IRateLimiterConfig
 {
     public int Count { get; init; }
     public int Duration { get; init; }
-    public ISystemDate SystemDate { get; init; }
-
-    public RateLimiterConfig(int count, int duration, ISystemDate systemDate)
+    
+    public RateLimiterConfig(int count, int duration)
     {
         Count = count;
         Duration = duration;
-        SystemDate = systemDate;
     }
 }
