@@ -167,4 +167,29 @@ public class RateLimiterTests
     
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
+    
+    [Fact]
+    public async void Invoke_WhenActionThrowsException_ShouldTaskReturnFail()
+    {
+        // Arrange
+        const int tasksCount = 5;
+        var timeStub = new SystemDateStub(new DateTime(2000, 1, 1, 1 ,1 ,1));
+        var config = new RateLimiterConfig(tasksCount, 1);
+        var cut = new RateLimiter<int>(config, timeStub);
+        var tasksList = new List<Task<Result<int>>>();
+
+        for (int i = 0; i < tasksCount; i++)
+        {
+            var innerTask = Task.FromException<int>(new Exception("boom!"));
+            var func = new Func<Task<int>>(() => innerTask);
+            var task = Task.Run(async () => await cut.Invoke(func, CancellationToken.None));
+            tasksList.Add(task);
+        }
+        
+        // Act
+        await Task.WhenAll(tasksList);
+        
+        // Assert
+        Assert.Equal(tasksCount, tasksList.Count(x => x.Result.Value == 0));
+    }
 }

@@ -1,4 +1,5 @@
-﻿using RateLimiterCore.Abstractions;
+﻿using System.Diagnostics;
+using RateLimiterCore.Abstractions;
 
 namespace RateLimiterCore;
 
@@ -27,12 +28,20 @@ public class RateLimiter<T> : IRateLimiter<T>, IDisposable
     {
         if (_systemDate.Now >= _nextWindow)
             PrepareNextWindow();
-
+        
         if (!_semaphore.Wait(100, cancellationToken)) 
             return Result<T>.Fail();
         
-        var result = await action.Invoke();
-        return Result<T>.Success(result);
+        try
+        {
+            var result = await action.Invoke();
+            return Result<T>.Success(result);
+        }
+        catch (Exception e)
+        {
+            Trace.WriteLine(e.Message);
+            return Result<T>.Fail();
+        }
     }
     
     private void PrepareNextWindow()
