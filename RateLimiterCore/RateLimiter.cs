@@ -26,10 +26,12 @@ public class RateLimiter<T> : IRateLimiter<T>, IDisposable
     
     public async Task<Result<T>> Invoke(Func<Task<T>> action, CancellationToken cancellationToken)
     {
+        const int timeout = 100;
+        
         if (_systemDate.Now >= _nextWindow)
             PrepareNextWindow();
         
-        if (!_semaphore.Wait(100, cancellationToken)) 
+        if (!_semaphore.Wait(timeout, cancellationToken)) 
             return Result<T>.Fail();
         
         try
