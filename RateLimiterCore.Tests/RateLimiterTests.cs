@@ -32,11 +32,13 @@ public class RateLimiterTests
         {
             var innerTask = Task.FromResult(1);
             var func = new Func<Task<int>>(() => innerTask);
+            
+            // Act
             var task = Task.Run(async () => await cut.Invoke(func, CancellationToken.None));
+            
             tasksList.Add(task);
         }
         
-        // Act
         await Task.WhenAll(tasksList);
         
         // Assert
@@ -87,11 +89,13 @@ public class RateLimiterTests
             {
                 var innerTask = Task.FromResult(1);
                 var func = new Func<Task<int>>(() => innerTask);
+                
+                // Act
                 var task = Task.Run(async () => await cut.Invoke(func, CancellationToken.None));
+                
                 tasksList.Add(task);    
             }
             
-            // Act
             await Task.WhenAll(tasksList);
         }
         
@@ -162,6 +166,59 @@ public class RateLimiterTests
                 10, 
                 3,
                 10
+            };
+        }
+    
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+    
+    [Theory]
+    [ClassData(typeof(DataForTheoryWhenTasksComeOneByOne))]
+    public void Invoke_WhenTasksComeOneByOne_ShouldExecuteOnlyAllowedToWindow(DateTime startDate,
+        int portions, DateTime[] dates, int[] tasksCount, int configCount, int configDuration)
+    {
+        // Arrange
+        var timeStub = new SystemDateStub(startDate);
+        var config = new RateLimiterConfig(configCount, configDuration);
+        var cut = new RateLimiter<int>(config, timeStub);
+        
+        for (int i = 0; i < portions; i++)
+        {
+            timeStub.Now = dates[i];
+            
+            for (int j = 0; j < tasksCount[i]; j++)
+            {
+                var innerTask = Task.FromResult(1);
+                var func = new Func<Task<int>>(() => innerTask);
+                
+                // Act
+                var task = Task.Run(async () => await cut.Invoke(func, CancellationToken.None));
+
+                task.Wait();
+                var result = task.Result.Value;
+                
+                // Assert
+                Assert.Equal(j < configCount ? 1 : 0, result);
+            }
+        }
+    }
+    
+    private class DataForTheoryWhenTasksComeOneByOne : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            yield return new object[]
+            {
+                new DateTime(2000, 1, 1, 1 ,1 ,1),
+                2,
+                new []
+                { 
+                    new DateTime(2000, 1, 1, 1 ,1 ,1),
+                    new DateTime(2000, 1, 1, 1 ,1 ,2),
+                },
+                new [] { 6, 6 },
+                5, 
+                1
             };
         }
     
