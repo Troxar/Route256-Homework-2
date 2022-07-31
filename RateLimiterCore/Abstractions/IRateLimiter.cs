@@ -1,4 +1,4 @@
-﻿namespace RateLimiterCore;
+﻿namespace RateLimiterCore.Abstractions;
 
 public interface IRateLimiter<T>
 {
